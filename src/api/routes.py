@@ -58,6 +58,9 @@ def user_login():
     if user is None:
         return jsonify({"msg": "User not found"}), 404
     
+    if not user.is_active:
+        return jsonify({"msg": "The user is not active"}), 400
+
     password_check=bcrypt.check_password_hash(user.password, body["password"]) # returns True
     if password_check == False:
         return jsonify({"msg": "Password not valid"}), 401
@@ -84,3 +87,9 @@ def user_info():
     user=get_jwt_identity()
     payload=get_jwt()
     return jsonify({"user": user, "role": payload["role"]})
+
+@api.route('/private', methods=['GET'])
+@jwt_required()
+def user_private():
+    user=get_jwt_identity()
+    return jsonify({"msg": "Access granted", "body": user})
