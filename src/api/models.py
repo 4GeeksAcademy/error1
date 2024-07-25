@@ -33,3 +33,9 @@ class User(db.Model):
             "last_name": self.last_name,
             "email": self.email,
         }
+    
+class TokenBlockList(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(100), nullable=False)
+
+    

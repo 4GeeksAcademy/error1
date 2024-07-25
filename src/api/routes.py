@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
 from flask_jwt_extended import create_access_token, get_jwt_identity, get_jwt, jwt_required
-from api.models import db, User
+from api.models import db, User, TokenBlockList
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
@@ -66,7 +66,17 @@ def user_login():
     if user.id %2 == 0:
         role = "user"
     token = create_access_token(identity=user.id, additional_claims={"role": role})
-    return jsonify({"token":token}), 200
+    return jsonify({"token":token, "msg": "User logged in correctly"}), 200
+
+@api.route('/logout', methods=['POST'])
+@jwt_required()
+def user_logout():
+    jti=get_jwt()["jti"]
+    token_blocked=TokenBlockList(jti=jti)
+    db.session.add(token_blocked)
+    db.session.commit()
+    return jsonify({"msg":"Logout"})
+
 
 @api.route('/userinfo', methods=['GET'])
 @jwt_required()
